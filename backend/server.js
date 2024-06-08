@@ -5,20 +5,15 @@ const cors = require("cors");
 const connectDB = require("./config/db");
 const colors = require("colors");
 
+const userRoutes = require("./routes/userRoutes");
+
 const app = express();
 dotenv.config();
 connectDB();
 app.use(cors());
 app.use(express.json());
 
-app.get("/", (req, res) => {
-  res.send("API IS RUNNING");
-});
-
-app.get("/api/chat", (req, res) => {
-  console.log(chats);
-  res.send(chats);
-});
+app.use("/api/user", userRoutes);
 
 const PORT = process.env.PORT || 5000;
 
