@@ -7,7 +7,11 @@ import {
   InputGroup,
   InputRightElement,
   VStack,
+  useToast,
 } from "@chakra-ui/react";
+import axios from "axios";
+import { REACT_APP_IP, REACT_APP_PORT } from "../services/common";
+import { useNavigate } from "react-router-dom";
 
 const Login = () => {
   const [userDetails, setUserDetails] = useState({
@@ -15,10 +19,50 @@ const Login = () => {
     password: "",
   });
   const [show, setShow] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const toast = useToast();
+  const navigate = useNavigate();
 
-  const onSubmitHandler = (e) => {
+  const onSubmitHandler = async (e) => {
     e.preventDefault();
-    console.log(userDetails);
+    setLoading(true);
+    if (!userDetails.email || !userDetails.password) {
+      toast({
+        title: "Please fill all the fields.",
+        status: "warning",
+        duration: 5000,
+        isClosable: true,
+        position: "bottom",
+      });
+      return;
+    }
+
+    try {
+      const { data } = await axios.post(
+        `http://${REACT_APP_IP}:${REACT_APP_PORT}/api/user/login`,
+        userDetails
+      );
+
+      toast({
+        title: "Login Successful.",
+        status: "success",
+        duration: 5000,
+        isClosable: true,
+        position: "bottom",
+      });
+      localStorage.setItem("userInfo", JSON.stringify(data));
+      setLoading(false);
+      navigate("/chat");
+    } catch (error) {
+      toast({
+        title: "Error Occured.",
+        description: error.response.data.message,
+        status: "error",
+        duration: 5000,
+        isClosable: true,
+        position: "bottom",
+      });
+    }
   };
 
   return (
@@ -65,6 +109,7 @@ const Login = () => {
         variant="solid"
         colorScheme="red"
         width="100%"
+        isLoading={loading}
         onClick={() => {
           setUserDetails({
             ...userDetails,
